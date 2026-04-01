@@ -584,6 +584,18 @@
                     <span class="duration-badge ${call.duration >= 180 ? 'duration-long' : 'duration-short'}">${call.duration >= 180 ? 'Long Call' : 'Short Call'}</span>
                 </div>
                 
+                ${call.recording_url ? `
+                <div class="modal-section" style="background: linear-gradient(135deg, #4E2C1D, #6B4433); border-radius: 12px;">
+                    <div class="modal-section-title" style="color: #fff;">🎧 Listen to Recording</div>
+                    <div class="modal-section-content">
+                        <audio controls style="width: 100%; margin-top: 8px;" preload="none">
+                            <source src="${call.recording_url}" type="audio/mpeg">
+                            Your browser does not support audio playback.
+                        </audio>
+                    </div>
+                </div>
+                ` : ''}
+                
                 <div class="modal-section">
                     <div class="modal-section-title">🚨 What Went Wrong</div>
                     <div class="modal-section-content">${call.what_went_wrong || 'Not specified'}</div>

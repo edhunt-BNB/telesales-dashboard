@@ -411,6 +411,12 @@ def get_all_analysis_data(service):
         if not call_date:
             call_date = datetime.now().strftime('%Y-%m-%d')
         
+        # Build authenticated recording URL
+        auth_recording_url = ""
+        if recording_url:
+            # Embed credentials in URL for audio playback
+            auth_recording_url = recording_url.replace("https://", "https://adversus_recording:c1byqg63fpwsg48co4soc0k@")
+        
         calls.append({
             "date": call_date,
             "agent": row[2] if len(row) > 2 else "",
@@ -428,7 +434,8 @@ def get_all_analysis_data(service):
             "what_went_wrong": row[14] if len(row) > 14 else "",
             "top_improvement": row[15] if len(row) > 15 else "",
             "key_moments": row[16] if len(row) > 16 else "",
-            "region": region
+            "region": region,
+            "recording_url": auth_recording_url
         })
     
     return calls
