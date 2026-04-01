@@ -450,10 +450,29 @@ def update_html_dashboard(calls):
     
     js_data = json.dumps(calls, indent=2)
     
-    pattern = r'const sampleData = \[[\s\S]*?\];'
-    replacement = f'const sampleData = {js_data};'
+    # Find and replace the sampleData - use string find/replace instead of regex
+    # to avoid issues with backslashes in URLs
+    start_marker = 'const sampleData = ['
+    end_marker = '];'
     
-    new_html = re.sub(pattern, replacement, html)
+    start_idx = html.find(start_marker)
+    if start_idx == -1:
+        print("Could not find sampleData in HTML")
+        return
+    
+    # Find the matching end bracket
+    bracket_count = 0
+    end_idx = start_idx + len(start_marker) - 1
+    for i in range(start_idx + len(start_marker) - 1, len(html)):
+        if html[i] == '[':
+            bracket_count += 1
+        elif html[i] == ']':
+            bracket_count -= 1
+            if bracket_count == 0:
+                end_idx = i + 2  # Include '];'
+                break
+    
+    new_html = html[:start_idx] + f'const sampleData = {js_data};' + html[end_idx:]
     
     with open(html_path, 'w', encoding='utf-8') as f:
         f.write(new_html)
@@ -471,27 +490,14 @@ def main():
     
     new_calls_analyzed = analyze_new_calls(service)
     
-    if new_calls_analyzed:
-        print("\nNew calls were analyzed. Updating dashboard...")
-        calls = get_all_analysis_data(service)
-        if calls:
-            update_html_dashboard(calls)
+    # Always update dashboard with latest data (including recording URLs)
+    print("\nUpdating dashboard with all call data...")
+    calls = get_all_analysis_data(service)
+    if calls:
+        update_html_dashboard(calls)
         print("Dashboard updated!")
     else:
-        print("\nNo new calls to analyze.")
-        calls = get_all_analysis_data(service)
-        if calls:
-            with open("index.html", 'r') as f:
-                current_html = f.read()
-            current_match = re.search(r'const sampleData = (\[[\s\S]*?\]);', current_html)
-            if current_match:
-                try:
-                    current_data = json.loads(current_match.group(1))
-                    if len(calls) != len(current_data):
-                        update_html_dashboard(calls)
-                        print("Dashboard synced with latest data.")
-                except:
-                    update_html_dashboard(calls)
+        print("No call data found.")
     
     print("\nDone!")
 
